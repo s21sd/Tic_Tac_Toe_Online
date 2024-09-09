@@ -1,10 +1,25 @@
 "use client"
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
+import { io } from 'socket.io-client';
 
+const socket = io('http://localhost:8000');
 const page = () => {
     const router = useRouter();
+    const [username, setUserName] = useState("");
+    const [roomId, setRoomId] = useState("");
+    const [message, setMessage] = useState("");
+    const handleJoinRoom = () => {
+        socket.emit('joinGame', { username, roomId });
 
+
+        socket.on('gamejoined', (data) => {
+            setMessage(`Game created with ID: ${data.gameId}, Player ID: ${data.playerId}`);
+
+        })
+    }
+    console.log(username);
+    console.log(message);
     return (
         <div>
 
@@ -13,9 +28,11 @@ const page = () => {
                     <h2 className="text-2xl font-bold text-gray-200 mb-4">Join Room</h2>
 
                     <div className="flex flex-col">
-                        <input placeholder="Enter your Room Id" className="bg-gray-700 text-gray-200 border-0 rounded-md p-2 mb-4 focus:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150" type="text" />
+                        <input onChange={(e) => setUserName(e.target.value)} placeholder="Enter your username" required className="bg-gray-700 text-gray-200 border-0 rounded-md p-2 mb-4 focus:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150" type="text" />
 
-                        <button onClick={() => router.push('/main')} className="bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-green-600 hover:to-blue-600 transition ease-in-out duration-150" >Join Room</button>
+                        <input onChange={(e) => setRoomId(e.target.value)} placeholder="Enter your Room Id" required className="bg-gray-700 text-gray-200 border-0 rounded-md p-2 mb-4 focus:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150" type="text" />
+
+                        <button onClick={handleJoinRoom} className="bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-green-600 hover:to-blue-600 transition ease-in-out duration-150" >Join Room</button>
                     </div>
 
                     <div className="flex justify-center mt-4">
