@@ -1,54 +1,38 @@
-"use client";
+"use client"
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { io } from "socket.io-client";
 
-let socket: any;
+const socket = io("http://localhost:8000");
 
 export default function Component() {
-    const [board, setBoard] = useState<Array<string | null>>(Array(9).fill(null));
+    const [boardy, setBoard] = useState<Array<string | null>>(Array(9).fill(null));
     const [currentPlayer, setCurrentPlayer] = useState<"X" | "O">("X");
-    const [gameId] = useState<string>("66df51511e24e470d3828f03");
-    const [playerId] = useState<string>("66df5151a1e4b07fe501b8e8");
-    const [x, setXVal] = useState<number>(0);
-    const [y, setYVal] = useState<number>(0);
+    const [cnt, setCnt] = useState(0);
+    const [gameId] = useState<string>("66e1a3dab00207012507461f");
+    const [playerId] = useState<string>("66e1a3dba1e4b07fe5ed37bd");
 
     useEffect(() => {
-        // Initialize socket connection
-        socket = io("http://localhost:8000");
-
-        // Socket event listeners
-        socket.on('error', (errorMessage: any) => {
-            console.log(`Error: ${errorMessage}`);
+        // Listen for board updates from the server
+        socket.on('updateBoard', ({ board, currentTurn }) => {
+            setBoard(board);
+            setCurrentPlayer(currentTurn === playerId ? "X" : "O");
         });
+        console.log(boardy)
 
-        socket.on('gameover', (data: any) => {
-            console.log('Game Over:', data);
-        });
-
+        // Cleanup on component unmount
         return () => {
-            socket.disconnect();
+            socket.off('updateBoard');
         };
     }, []);
 
-    useEffect(() => {
-        // Emit the move whenever x or y changes
-        if (x !== null && y !== null) {
-            socket.emit('makemove', { gameId, playerId, x, y });
-        }
-    }, [x, y, gameId, playerId]);
-
-    const setTheCoordinates = (index: number) => {
-        const newX = Math.floor(index / 3);
-        const newY = index % 3;
-        setXVal(newX);
-        setYVal(newY);
-    };
 
     const handleClick = (index: number) => {
-        if (board[index]) return; // Prevent clicking on an already filled cell
-        setTheCoordinates(index);
-        console.log("Clicked index:", index);
+        if (boardy[index]) return; // Prevent clicking on an already filled cell
+        const x = Math.floor(index / 3);
+        const y = index % 3;
+        setCnt((prev) => prev + 1);
+        socket.emit('makemove', { gameId, playerId, x, y });
     };
 
     return (
@@ -56,7 +40,7 @@ export default function Component() {
             <div className="max-w-md w-full space-y-6">
                 <h1 className="text-4xl font-bold text-[#4a4a4a]">Tic Tac Toe</h1>
                 <div className="grid grid-cols-3 gap-4">
-                    {board.map((cell, index) => (
+                    {boardy.map((cell, index) => (
                         <div
                             key={index}
                             className="w-16 h-16 bg-white border border-[#ced4da] rounded-md flex items-center justify-center text-4xl font-bold text-[#4a4a4a] cursor-pointer hover:bg-[#e6e6e6]"
