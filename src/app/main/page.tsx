@@ -2,17 +2,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { io, Socket } from "socket.io-client";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Socket initialization should only occur once
 const socket: Socket = io("http://localhost:8000");
 
 export default function Component() {
+    const searchParams = useSearchParams()
+    const gameId = searchParams.get('gameId');
+    const playerId = searchParams.get('playerId')
     const [board, setBoard] = useState<Array<string | null>>(Array(9).fill(null));
     const [currentPlayer, setCurrentPlayer] = useState<"X" | "O">("X");
     const [cnt, setCnt] = useState(0);
-    const [gameId] = useState<string>("66e1a3dab00207012507461f");
-    const [playerId] = useState<string>("66e1a3e4a1e4b07fe5ed4a91");
 
+    console.log(gameId);
+    console.log(playerId);
     useEffect(() => {
         // Listen for board updates from the server
         socket.on('updateBoard', ({ board, currentTurn }) => {

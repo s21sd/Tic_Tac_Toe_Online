@@ -10,11 +10,15 @@ const Page = () => {
     const [username, setUserName] = useState("");
     const [roomId, setRoomId] = useState("");
     const [message, setMessage] = useState("");
-
+    const [gameId, setGameId] = useState("");
+    const [playerId, setPlayerId2] = useState("");
     useEffect(() => {
 
         socket.on('gamejoined', (data) => {
             setMessage(`Game joined with ID: ${data.gameId}, Player ID: ${data.playerId}`);
+            setGameId(data.gameId);
+            setPlayerId2(data.playerId);
+
         });
 
         socket.on('error', (errorMsg) => {
@@ -29,6 +33,11 @@ const Page = () => {
     const handleJoinRoom = () => {
         if (username && roomId) {
             socket.emit('joinGame', { username, gameId: roomId });
+            setTimeout(() => {
+                router.push(`/main?gameId=${gameId}&playerId=${playerId}`);
+            }, 3000)
+
+
         } else {
             setMessage('Please enter both username and room ID.');
         }
